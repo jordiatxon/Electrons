@@ -66,7 +66,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const initialElectrons = Array.from({ length: ELECTRON_COUNT }).map(() => ({
       trackPos: Math.random() * PERIMETER,
-      transversePos: (Math.random() - 0.5) * 12, // Slightly less than CONDUCTOR_W to ensure they are visibly inside
+      transversePos: (Math.random() - 0.5) * 12, 
       vx: (Math.random() * 2 + 1) * (Math.random() > 0.5 ? 1 : -1),
       vy: (Math.random() * 2 + 1) * (Math.random() > 0.5 ? 1 : -1),
       vfreq: `${(Math.random() * 0.3 + 0.2).toFixed(2)}s`
@@ -102,27 +102,35 @@ const App: React.FC = () => {
           setVisibleIons(i => Math.max(0, i - ION_DRAIN_S));
         }
 
-        // Generate battery chemistry electrons
+        // Generate battery chemistry electrons inside the Zinc pole (Negative)
+        // Battery group starts at x=250. Zinc pole is at x=100 relative to battery.
+        // So Zinc x is between 350 and 400 relative to the main group.
         if (Math.random() > 0.7) {
           const id = batteryElectronIdCounter.current++;
-          const startX = 100 + (325 - 75) + 100 + Math.random() * 50; 
-          const startY = 100 + RAIL_OFFSET - 37.5 + Math.random() * 75;
+          const startX = 350 + Math.random() * 45; 
+          const startY = (RAIL_OFFSET - 37.5) + Math.random() * 70;
           setBatteryElectrons(prev => [...prev, { id, x: startX, y: startY }]);
         }
       }
 
       // Slide battery electrons towards the conductor entry (top rail, right of battery)
       setBatteryElectrons(prev => prev.map(be => {
-        const targetX = 100 + 325 + 75; // Right edge of battery on top rail
-        const targetY = 100 + RAIL_OFFSET;
-        const dx = (targetX - be.x) * (deltaTime / 1.0);
-        const dy = (targetY - be.y) * (deltaTime / 1.0);
-        return { ...be, x: be.x + dx, y: be.y + dy };
-      }).filter(be => {
-        const targetX = 100 + 325 + 75;
-        const targetY = 100 + RAIL_OFFSET;
-        return Math.sqrt(Math.pow(be.x - targetX, 2) + Math.pow(be.y - targetY, 2)) > 5;
-      }));
+        const targetX = 325 + 75; // Right edge of battery
+        const targetY = RAIL_OFFSET;
+        // Directional vector
+        const dx = targetX - be.x;
+        const dy = targetY - be.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 5) return { ...be, x: targetX, y: targetY, dead: true };
+        
+        // Move slowly towards the exit point
+        return { 
+          ...be, 
+          x: be.x + (dx / dist) * 100 * deltaTime, 
+          y: be.y + (dy / dist) * 100 * deltaTime 
+        };
+      }).filter(be => !be.hasOwnProperty('dead')));
 
       animationFrame = requestAnimationFrame(loop);
     };
@@ -167,14 +175,13 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center w-full h-full bg-black overflow-hidden relative">
-      {/* Title (Kept at lowered 40px margin) */}
       <h1 className="mt-[40px] text-white text-[20px] font-bold text-center" style={{ fontFamily: 'Arial' }}>
         Representació del circuit elèctric de corrent continu
       </h1>
 
       <svg width="850" height="480" viewBox="0 0 850 480" className="flex-shrink-0 mt-4">
         <g transform="translate(100, 50)">
-          {/* Bulb - Behind conductor at bottom-mid-left area */}
+          {/* Bulb - Behind conductor */}
           <circle
             cx={318 + RAIL_OFFSET} 
             cy={TRACK_H + RAIL_OFFSET}
@@ -253,7 +260,12 @@ const App: React.FC = () => {
             <text x="125" y="105" fill="#A020F0" fontSize="30" fontFamily="Arial" textAnchor="middle">-</text>
           </g>
 
-          {/* Centered Button (Inside the hole) */}
+          {/* Released electrons chemical (Zinc pole) */}
+          {batteryElectrons.map(be => (
+            <circle key={be.id} cx={be.x} cy={be.y} r="1.5" fill="red" />
+          ))}
+
+          {/* Centered Button */}
           <foreignObject x="150" y="150" width="350" height="100">
             <div className="w-full h-full flex items-center justify-center">
               <button
@@ -266,26 +278,21 @@ const App: React.FC = () => {
             </div>
           </foreignObject>
         </g>
-
-        {/* Battery chemical electrons */}
-        {batteryElectrons.map(be => (
-          <circle key={be.id} cx={be.x} cy={be.y} r="1.5" fill="red" />
-        ))}
       </svg>
 
-      {/* Legends (Moved to the bottom, roughly 30px below the bulb/bottom segment) */}
-      <div className="mt-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-white text-[13px] max-w-5xl px-4" style={{ fontFamily: 'Arial' }}>
+      {/* Legends */}
+      <div className="mt-[41px] mb-8 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-white text-[13px] max-w-5xl px-4" style={{ fontFamily: 'Arial' }}>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-red-600" />
           <span>Electrons lliures.</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-red-600" />
-          <span>Electrons química.</span>
+          <span>Electrons alliberats.</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-blue-500 font-bold text-[22px] leading-none">+</span>
-          <span>Àtom positiu</span>
+          <span>Ions positius</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-gray-400" />
