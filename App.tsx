@@ -194,7 +194,7 @@ const App: React.FC = () => {
             )}
           </div>
           <p className="mt-4 text-white text-[13px] text-center leading-relaxed" style={{ fontFamily: 'Arial' }}>
-            Pila de Volta amb monedes de 10 cèntims (coure), capa de vinagre i volanderes cincades (Zinc). S'usa un Led com a bombeta.
+            Pila de Volta. Monedes de 10 cèntims escalfades (Òxid de Coure). Cartolina xopada amb vinagre. Volanderes cincades (Zinc)
           </p>
         </div>
 
@@ -304,7 +304,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Legends */}
-      <div className="mt-12 mb-12 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 text-white text-[13px] max-w-5xl px-6" style={{ fontFamily: 'Arial' }}>
+      <div className="mt-12 mb-12 flex flex-wrap justify-center gap-x-10 gap-y-6 text-white text-[13px] max-w-5xl px-6" style={{ fontFamily: 'Arial' }}>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-red-600" />
           <span>Electrons lliures.</span>
@@ -319,7 +319,7 @@ const App: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-gray-400" />
-          <span>Manganès</span>
+          <span>Òxid de Coure</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-blue-300" />
@@ -329,7 +329,7 @@ const App: React.FC = () => {
           <div className="w-2 h-2 bg-pink-300" />
           <span>Zinc</span>
         </div>
-        <div className="flex items-center gap-2 md:col-span-2">
+        <div className="flex items-center gap-2">
           <div className="flex gap-1">
             <div className="w-[3px] h-[12px] bg-[#A020F0]" />
             <div className="w-[3px] h-[12px] bg-[#A020F0]" />
